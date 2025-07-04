@@ -1,0 +1,11 @@
+use Test;
+
+my @modules = <
+    Strings::ToRole
+>;
+
+plan @modules.elems;
+
+for @modules -> $m {
+    use-ok $m, "Module '$m' used okay";
+}

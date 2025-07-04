@@ -1,0 +1,25 @@
+{
+  "auth": "zef:tbrowder",
+  "authors": [
+    "Tom Browder"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "Create a named 'role' from a list of strings of the form \"attribute-name value\" \n",
+  "license": "Artistic-2.0",
+  "name": "Strings::ToRole",
+  "perl": "6.d",
+  "provides": {
+    "Strings::ToRole": "lib/Strings/ToRole.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "",
+  "tags": [
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
