@@ -16,7 +16,7 @@ my @rawlines = [
     "another <a name>",
     "other |a name|",
 ];
-is @rawlines.elems, 7;
+is @rawlines.elems, 6;
 
 my %h;
 my $i = -1;
@@ -32,10 +32,12 @@ for @rawlines -> $line is copy {
     my $dl;
     # name value type
     if @w.elems == 2 {
-        $dl = DLine.new: :line-number($i), :name({@w.shift}), :value({@w.shift});
+        $dl = DLine.new: :line-number($i), :name({@w.shift}), 
+              :value({@w.shift});
     }
     else {
-        $dl = DLine.new: :line-number($i), :name({@w.shift}), :value({@w.shift}), :type({@w.shift});
+        $dl = DLine.new: :line-number($i), :name({@w.shift}), 
+              :value({@w.shift}), :type({@w.shift});
     }
     isa-ok $dl, DLine;
 }
