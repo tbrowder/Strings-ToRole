@@ -19,6 +19,14 @@ my %h;
 for @lines.kv -> $i, $line {
     my @w = parse-data-line $line;
     %h{$i} = @w;
+    my $dl;
+    # name value type
+    if @w.elems == 2 {
+        $dl = DLine.new: :name({@w.shift}), :value({@w.shift});
+    }
+    else {
+        $dl = DLine.new: :name({@w.shift}), :value({@w.shift}), :type({@w.shift});
+    }
 }
 
 is %h.elems, @lines.elems, "correct number of lines";
@@ -27,21 +35,3 @@ is 1, 1;
 
 done-testing;
 
-=finish
-
-# Generate the role dynamically
-my $Role = create-role-from-lines @lines, :role-name("TestRole");
-
-# Apply the $Role to a new class
-class TestClass does $Role {}
-
-# Instantiate the class
-my $obj = TestClass.new;
-
-# Test that the role was applied and attributes are correct
-ok $obj.^does(TestRole), 'Class does the generated role';
-is $obj.name, 'Raku', 'Correct value for name';
-is $obj.version, 2024, 'Correct value for version';
-ok $obj.active, 'Correct value for active';
-
-done-testing;
