@@ -1,35 +1,48 @@
 unit module Strings::ToRole;
 
-#use MONKEY-SEE-NO-EVAL;
-use MONKEY;
-
 use Text::Utils :strip-comment;
 
-#| Create a role from a list of "attribute-name value" strings.
-#| Optionally provide a custom role name.
-sub create-role-from-lines(
-    @lines,
-    Str :$role-name!,
-) is export {
-    my $role-code = "role $role-name \{\n";
+class DLine { 
+    has $.name  is rw is required;
+    has $.value is rw is required;
+    has $.type = "Str"; # defauld
+}
 
-    for @lines -> $line is copy {
+sub create-role(
+    # lines with: attr-name attr-value attr-type
+    $file where *.IO.r, 
+    :$role-name!,
+    :$role-file is copy,
+    :$debug,
+    --> List
+    ) is export {
+    unless $role-file.defined {
+        my $s = $role-name.lc;
+        $s ~~ s/'.' \S* $//;
+        $role-name = "$s.txt";
+    }
+
+    my @dlines;
+
+    for $file.IO.lines -> $line is copy {
         $line = strip-comment $line;
         next unless $line ~~ /\S/;
         my @w = $line.words;
         my $nw = @w.elems;
-        unless $nw == 2 {
-            die "FATAL: Only two words allowed, but string '$line' has $nw";
+        unless 1 < $nw < 4 {
+            die "FATAL: Expected 2 or 3 words but got $nw";
         }
-        my $name  = @w.shift.Str;
-        my $value = @w.shift.Str; # , $value) = $line.split(' ', 2);
-        $role-code ~= "    has \$.{$name} = '\{$value}';\n";
+        my $k = @w.shift;
+        my $v = @w.shift;
+        my $t;
+        if @w.elems {
+            $t = @w.shift;
+        }
+        my $dl = DLine.new: :name($k), :value($v);
+        if $t {
+            $dl.t = $t;
+        }
+        @dlines.push: $dl;
     }
-
-    $role-code ~= "}\n";
-
-    try {
-        EVAL $role-code;
-        return ::($role-name);  # Return the role metaobject
-    } // die "Failed to compile role: $!";
 }
+
