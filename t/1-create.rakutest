@@ -27,6 +27,7 @@ for @lines.kv -> $i, $line {
     else {
         $dl = DLine.new: :name({@w.shift}), :value({@w.shift}), :type({@w.shift});
     }
+    isa-ok $dl, DLine;
 }
 
 is %h.elems, @lines.elems, "correct number of lines";
