@@ -1,0 +1,5 @@
+# some data
+name Sam
+town Chicago
+zip  "00450"
+avg-temp 68.6 Numeric # is type necessary?

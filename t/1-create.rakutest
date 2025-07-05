@@ -8,8 +8,26 @@ use Strings::ToRole;
 my @lines = [
     "name Raku",
     "version 2024",
-    "active True"
+    "zip '00450'",
+    "other 'a name'",
+    "another <a name>",
+    "other |a name|",
 ];
+is @lines.elems, 6;
+
+my %h;
+for @lines.kv -> $i, $line {
+    my @w = parse-data-line $line;
+    %h{$i} = @w;
+}
+
+is %h.elems, @lines.elems, "correct number of lines";
+
+is 1, 1;
+
+done-testing;
+
+=finish
 
 # Generate the role dynamically
 my $Role = create-role-from-lines @lines, :role-name("TestRole");
