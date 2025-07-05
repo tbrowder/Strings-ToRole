@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/tbrowder/Strings-ToRole/actions/workflows/linux.yml/badge.svg)](https://github.com/tbrowder/Strings-ToRole/actions) [![Actions Status](https://github.com/tbrowder/Strings-ToRole/actions/workflows/macos.yml/badge.svg)](https://github.com/tbrowder/Strings-ToRole/actions) [![Actions Status](https://github.com/tbrowder/Strings-ToRole/actions/workflows/windows.yml/badge.svg)](https://github.com/tbrowder/Strings-ToRole/actions)
+
 NAME
 ====
 

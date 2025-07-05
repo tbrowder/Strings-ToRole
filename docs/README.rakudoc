@@ -2,20 +2,57 @@
 
 =head1 NAME
 
-B<Strings::ToRole> - Create a named 'role' from a list of strings of the form "attribute-name value" 
-
+B<Strings::ToRole> - Creates a file defining a named 'role' from a list of strings
 
 =head1 SYNOPSIS
 
 =begin code :lang<raku>
-
 use Strings::ToRole;
-
+my @s = [
+    attr1 value1 # value1 is a string
+    attr2 32     # Numeric
+    attr3 False  # Bool
+    attr3 "/path/file.pff" # IO::Path
+];
+my $role-name = "MyRole";
+my $role-file = "myrole.txt";
+strings2role @s, :$role-name, :$role-file;
 =end code
 
 =head1 DESCRIPTION
 
-B<Strings::ToRole> is ...
+B<Strings::ToRole> produces a text file that can be used to
+define a Raku named C<role> so a using Raku C<class> 
+can be instantiated with it.
+
+NOTE: I<The generated role file, when used by a class,
+gets compiled into usable class member BEFORE the class
+is constructed, so the role's attributes and methods can be 
+used to complete the construction of the using class.>
+
+=head2 The role file
+
+The text file defining the role looks like this:
+
+=begin code
+=end code
+
+=head2 The class file
+
+That file then can be used to provide data to
+define a Raku C<class> by doing this:
+
+=begin code 
+# insert code from file "myrole.txt" here...
+class MyClass does MyRole is export {
+   # more code that uses the data in the role MyRole
+   # ...
+}
+=end code
+
+The user is free to crreate a collection of useful role
+files to mix and match to define other useful classes.
+
 
 =head1 AUTHOR
 

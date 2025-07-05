@@ -1,0 +1,114 @@
+unit module RoleFromPairs::Builder;
+
+use MONKEY-TYPING;
+
+#| Creates a role from space-separated attribute-value pairs
+sub create-role-from-pairs(
+    @pairs,
+    Str :$role-name = 'GeneratedRole',
+    Bool :$rw-accessors = True
+) is export {
+    my $role = Metamodel::ParametricRoleHOW.new_type(:name($role-name));
+
+    for @pairs -> $pair {
+        my ($name, $value) = $pair.words;
+
+        # Add attribute
+        $role.^add_attribute(
+            Attribute.new(
+                :name('$!' ~ $name),
+                :type(Str),
+                :package($role),
+                :has_accessor(1)
+            )
+        );
+
+        # Add accessor method
+        my $method = $rw-accessors
+            ?? method () is rw { $!{$name} //= $value }
+            !! method () { $!{$name} // $value };
+
+        $role.^add_method($name, $method);
+    }
+
+    $role.^compose;
+    return $role;
+}
+
+#| Creates a typed role from attribute-type-value triplets
+sub create-typed-role-from-pairs(
+    @pairs,
+    Str :$role-name = 'GeneratedTypedRole'
+) is export {
+    my $role = Metamodel::ParametricRoleHOW.new_type(:name($role-name));
+
+    for @pairs -> $pair {
+        my ($name, $type, $value) = $pair.words;
+
+        my $type-obj = do given $type.lc {
+            when 'int'|'integer' => Int;
+            when 'num'|'number'  => Num;
+            when 'str'|'string'  => Str;
+            when 'bool'|'boolean' => Bool;
+            default              => Str;
+        };
+
+        $role.^add_attribute(
+            Attribute.new(
+                :name('$!' ~ $name),
+                :type($type-obj),
+                :package($role),
+                :has_accessor(1)
+            )
+        );
+
+        $role.^add_method($name, method () is rw {
+            $!{$name} //= coerce-value($value, $type-obj);
+        });
+    }
+
+    $role.^compose;
+    return $role;
+}
+
+#| Helper sub for value coercion
+sub coerce-value($value, $type) is export(:helpers) {
+    return do given $type {
+        when Int   { $value.Int }
+        when Num   { $value.Num }
+        when Bool  { $value.Bool }
+        default    { $value.Str }
+    }
+}
+
+use Test;
+use RoleFromPairs::Builder;
+
+plan 6;
+
+my @pairs = ['color blue', 'size large'];
+my $role = create-role-from-pairs(@pairs, :role-name('TestRole'));
+
+class TestClass does $role {}
+
+my $obj = TestClass.new;
+
+# Test default values
+is $obj.color, 'blue', 'Default color value correct';
+is $obj.size, 'large', 'Default size value correct';
+
+# Test value modification
+$obj.color = 'red';
+is $obj.color, 'red', 'Can modify attribute value';
+
+# Test role name
+is $role.^name, 'TestRole', 'Role name set correctly';
+
+# Test with read-only accessors
+my $ro-role = create-role-from-pairs(['material cotton'], :rw-accessors(False));
+class ROTest does $ro-role {}
+
+dies-ok { ROTest.new.material = 'silk' }, 'Read-only accessor prevents modification';
+
+# Test attribute existence
+ok ROTest.^attributes.first(*.name eq '$!material'), 'Attribute created';

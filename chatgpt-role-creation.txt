@@ -1,0 +1,76 @@
+unit module Dynamic::RoleFromList;
+
+#| Create a role from a list of "attribute-name value" strings.
+#| Optionally provide a custom role name.
+sub create-role-from-lines(
+    @lines,
+    Str $role-name = "GeneratedRole"
+) is export {
+    my $role-code = "role $role-name {\n";
+
+    for @lines -> $line {
+        my ($name, $value) = $line.split(' ', 2);
+        $role-code ~= "    has \$.{$name} = {$value.perl};\n";
+    }
+
+    $role-code ~= "}\n";
+
+    try {
+        EVAL $role-code;
+        return ::($role-name);  # Return the role metaobject
+    }
+    or die "Failed to compile role: $!";
+}
+
+
+
+use lib 'lib';
+use Dynamic::RoleFromList;
+
+my @data = (
+    "color 'blue'",
+    "height 180",
+    "active True"
+);
+
+my $Role = create-role-from-lines(@data, "MyDynamicRole");
+
+class Person does $Role {}
+
+my $p = Person.new;
+say $p.color;   # 'blue'
+say $p.height;  # 180
+say $p.active;  # True
+
+
+# tests
+
+use Test;
+use lib 'lib';
+use Dynamic::RoleFromList;
+
+plan 4;
+
+# Input lines with attribute and value
+my @input = (
+    "name 'Raku'",
+    "version 2024",
+    "active True"
+);
+
+# Generate the role dynamically
+my $Role = create-role-from-lines(@input, "TestRole");
+
+# Apply the role to a new class
+class TestClass does $Role {}
+
+# Instantiate the class
+my $obj = TestClass.new;
+
+# Test that the role was applied and attributes are correct
+ok $obj.^does(TestRole), 'Class does the generated role';
+is $obj.name, 'Raku', 'Correct value for name';
+is $obj.version, 2024, 'Correct value for version';
+ok $obj.active, 'Correct value for active';
+
+done-testing;
