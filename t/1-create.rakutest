@@ -2,37 +2,45 @@ use Test;
 
 use Test;
 
+use Text::Utils :strip-comment;
+
 use Strings::ToRole;
 
 # Input lines with attribute and value
-my @lines = [
+my @rawlines = [
     "name Raku",
     "version 2024",
     "zip '00450'",
+    # comment
     "other 'a name'",
     "another <a name>",
     "other |a name|",
 ];
-is @lines.elems, 6;
+is @rawlines.elems, 7;
 
 my %h;
-for @lines.kv -> $i, $line {
+my $i = -1;
+my @goodlines;
+for @rawlines -> $line is copy {
+    $line = strip-comment $line;
+    next unless $line ~~ /\S/;
+
+    ++$i; # track only valid lines 
+    @goodlines.push: $line;
     my @w = parse-data-line $line;
     %h{$i} = @w;
     my $dl;
     # name value type
     if @w.elems == 2 {
-        $dl = DLine.new: :name({@w.shift}), :value({@w.shift});
+        $dl = DLine.new: :line-number($i), :name({@w.shift}), :value({@w.shift});
     }
     else {
-        $dl = DLine.new: :name({@w.shift}), :value({@w.shift}), :type({@w.shift});
+        $dl = DLine.new: :line-number($i), :name({@w.shift}), :value({@w.shift}), :type({@w.shift});
     }
     isa-ok $dl, DLine;
 }
 
-is %h.elems, @lines.elems, "correct number of lines";
-
-is 1, 1;
+is %h.elems, @goodlines.elems, "correct number of real data lines";
 
 done-testing;
 

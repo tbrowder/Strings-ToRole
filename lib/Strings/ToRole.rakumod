@@ -3,6 +3,7 @@ unit module Strings::ToRole;
 use Text::Utils :strip-comment;
 
 class DLine is export { 
+    has UInt $.line-number is required;
     has $.name  is rw is required;
     has $.value is rw is required;
     has $.type = "Str"; # defauld
